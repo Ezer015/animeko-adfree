@@ -43,6 +43,7 @@ import kotlin.io.encoding.Base64
 import kotlin.io.encoding.ExperimentalEncodingApi
 import kotlin.time.Duration
 
+private const val CORS_PROXY_URL = "https://ddplay-api.930524.xyz/cors/"
 
 internal class DandanplayClient(
     private val client: ScopedHttpClient,
@@ -50,10 +51,20 @@ internal class DandanplayClient(
     private val appSecret: String,
     private val ioDispatcher: CoroutineContext = Dispatchers.IO,
 ) {
+    private val useProxy = appId.isBlank() || appSecret.isBlank()
+
+    private fun resolveUrl(path: String): String {
+        if (useProxy) {
+            return "${CORS_PROXY_URL}https://api.dandanplay.net$path"
+        }
+        return "https://api.dandanplay.net$path"
+    }
+
     /**
      * Must be used at the last step of building the request.
      */
     private fun HttpRequestBuilder.addAuthorizationHeaders() {
+        if (useProxy) return // proxy handles auth server-side
         header("X-AppId", appId)
         val time = currentTimeMillis() / 1000
         header("X-Timestamp", time)
@@ -73,7 +84,7 @@ internal class DandanplayClient(
         // https://api.dandanplay.net/api/v2/bangumi/season/anime/2024/04
         client.use {
             val response =
-                get("https://api.dandanplay.net/api/v2/bangumi/season/anime/$year/$month") {
+                get(resolveUrl("/api/v2/bangumi/season/anime/$year/$month")) {
                     configureTimeout()
                     accept(ContentType.Application.Json)
                     addAuthorizationHeaders()
@@ -87,7 +98,7 @@ internal class DandanplayClient(
         subjectName: String,
     ): DandanplaySearchEpisodeResponse = withContext(ioDispatcher) {
         client.use {
-            val response = get("https://api.dandanplay.net/api/v2/search/anime") {
+            val response = get(resolveUrl("/api/v2/search/anime")) {
                 configureTimeout()
                 accept(ContentType.Application.Json)
                 parameter("keyword", subjectName)
@@ -108,7 +119,7 @@ internal class DandanplayClient(
     ): DandanplaySearchEpisodeResponse = withContext(ioDispatcher) {
         client.use {
             val response =
-                get("https://api.dandanplay.net/api/v2/search/episodes") {
+                get(resolveUrl("/api/v2/search/episodes")) {
                     configureTimeout()
                     accept(ContentType.Application.Json)
                     parameter("anime", subjectName)
@@ -125,7 +136,7 @@ internal class DandanplayClient(
     ): DandanplayGetBangumiResponse = withContext(ioDispatcher) {
         client.use {
             val response =
-                get("https://api.dandanplay.net/api/v2/bangumi/$bangumiId") {
+                get(resolveUrl("/api/v2/bangumi/$bangumiId")) {
                     configureTimeout()
                     accept(ContentType.Application.Json)
                     addAuthorizationHeaders()
@@ -140,7 +151,7 @@ internal class DandanplayClient(
     ): DandanplayGetBangumiResponse = withContext(ioDispatcher) {
         client.use {
             val response =
-                get("https://api.dandanplay.net/api/v2/bangumi/bgmtv/$bgmtvSubjectId") {
+                get(resolveUrl("/api/v2/bangumi/bgmtv/$bgmtvSubjectId")) {
                     configureTimeout()
                     accept(ContentType.Application.Json)
                     addAuthorizationHeaders()
@@ -158,7 +169,7 @@ internal class DandanplayClient(
     ): DandanplayMatchVideoResponse = withContext(ioDispatcher) {
         client.use {
             val response =
-                post("https://api.dandanplay.net/api/v2/match") {
+                post(resolveUrl("/api/v2/match")) {
                     configureTimeout()
                     contentType(ContentType.Application.Json)
                     accept(ContentType.Application.Json)
@@ -189,7 +200,7 @@ internal class DandanplayClient(
         val chConvert = 0
         client.use {
             val response =
-                get("https://api.dandanplay.net/api/v2/comment/${episodeId}?chConvert=$chConvert&withRelated=true") {
+                get(resolveUrl("/api/v2/comment/${episodeId}?chConvert=$chConvert&withRelated=true")) {
                     configureTimeout()
                     accept(ContentType.Application.Json)
                     addAuthorizationHeaders()
