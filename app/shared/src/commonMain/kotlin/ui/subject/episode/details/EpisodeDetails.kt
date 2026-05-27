@@ -579,9 +579,7 @@ fun EpisodeDetails(
                                 targetSubjectId?.let { put("subject_id", it) }
                                 uri?.let { put("target_uri", it) }
                             }
-                            if (uri != null) {
-                                browserNavigator.openBrowser(context, uri)
-                            } else if (targetSubjectId != null) {
+                            if (targetSubjectId != null) {
                                 navigator.navigateSubjectDetails(
                                     targetSubjectId,
                                     SubjectDetailPlaceholder(
@@ -591,6 +589,8 @@ fun EpisodeDetails(
                                         coverUrl = recommendation.imageUrl,
                                     ),
                                 )
+                            } else if (uri != null) {
+                                browserNavigator.openBrowser(context, uri)
                             }
                         },
                         recommendation,

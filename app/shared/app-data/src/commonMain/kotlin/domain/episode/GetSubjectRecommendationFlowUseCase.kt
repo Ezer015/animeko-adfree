@@ -32,7 +32,9 @@ fun interface GetSubjectRecommendationUseCase : UseCase {
 
 class GetSubjectRecommendationUseCaseImpl(private val service: SubjectService) : GetSubjectRecommendationUseCase {
     override suspend fun invoke(subjectId: Int): List<SubjectRecommendation> {
-        return service.getSubjectRecommendations(subjectId, 15).map {
+        return service.getSubjectRecommendations(subjectId, 15)
+            .filter { it.subjectId != null && it.uri == null }
+            .map {
             SubjectRecommendation(
                 subjectId = it.subjectId,
                 name = it.subjectName,
