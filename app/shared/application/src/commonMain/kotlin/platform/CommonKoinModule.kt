@@ -33,7 +33,6 @@ import me.him188.ani.app.data.network.BangumiBangumiCommentServiceImpl
 import me.him188.ani.app.data.network.BangumiCommentService
 import me.him188.ani.app.data.network.BangumiProfileService
 import me.him188.ani.app.data.network.BangumiRelatedPeopleService
-import me.him188.ani.app.data.network.BangumiSubjectSearchService
 import me.him188.ani.app.data.network.EpisodeService
 import me.him188.ani.app.data.network.EpisodeServiceImpl
 import me.him188.ani.app.data.network.RecommendationRepository
@@ -65,11 +64,11 @@ import me.him188.ani.app.data.repository.player.EpisodePlayHistoryRepositoryImpl
 import me.him188.ani.app.data.repository.player.EpisodeScreenshotRepository
 import me.him188.ani.app.data.repository.player.WhatslinkEpisodeScreenshotRepository
 import me.him188.ani.app.data.repository.repositoryModules
-import me.him188.ani.app.data.repository.subject.BangumiSubjectSearchCompletionRepository
 import me.him188.ani.app.data.repository.subject.DefaultSubjectRelationsRepository
 import me.him188.ani.app.data.repository.subject.FollowedSubjectsRepository
 import me.him188.ani.app.data.repository.subject.SubjectCollectionRepository
 import me.him188.ani.app.data.repository.subject.SubjectCollectionRepositoryImpl
+import me.him188.ani.app.data.repository.subject.SubjectSearchCompletionRepository
 import me.him188.ani.app.data.repository.subject.SubjectRelationsRepository
 import me.him188.ani.app.data.repository.subject.SubjectSearchHistoryRepository
 import me.him188.ani.app.data.repository.subject.SubjectSearchRepository
@@ -243,11 +242,6 @@ private fun KoinApplication.otherModules(getContext: () -> Context, coroutineSco
             sessionManager = get(),
         )
     }
-    single<BangumiSubjectSearchService> {
-        BangumiSubjectSearchService(
-            searchApi = client.searchApi,
-        )
-    }
     single<AniSubjectSearchService> {
         AniSubjectSearchService(
             subjectApi = aniApiProvider.subjectApi,
@@ -255,15 +249,13 @@ private fun KoinApplication.otherModules(getContext: () -> Context, coroutineSco
     }
     single<SubjectSearchRepository> {
         SubjectSearchRepository(
-            bangumiSubjectSearchService = get(),
             aniSubjectSearchService = get(),
             subjectCollectionRepository = get(),
-            subjectService = get(),
         )
     }
-    single<BangumiSubjectSearchCompletionRepository> {
-        BangumiSubjectSearchCompletionRepository(
-            bangumiSubjectSearchService = get(),
+    single<SubjectSearchCompletionRepository> {
+        SubjectSearchCompletionRepository(
+            aniSubjectSearchService = get(),
             subjectCollectionRepository = get(),
             settingsRepository = get(),
         )
@@ -284,8 +276,6 @@ private fun KoinApplication.otherModules(getContext: () -> Context, coroutineSco
     // Data layer network services
     single<SubjectService> {
         RemoteSubjectService(
-            client,
-            client.api,
             aniApiProvider.subjectApi,
             sessionManager = get(),
         )
@@ -351,7 +341,7 @@ private fun KoinApplication.otherModules(getContext: () -> Context, coroutineSco
     single<BangumiProfileService> { BangumiProfileService() }
     single<AnimeScheduleService> { AnimeScheduleService(get<AniApiProvider>().scheduleApi) }
     single<TrendsRepository> { TrendsRepository(get<AniApiProvider>().trendsApi, get<BangumiClient>().nextTrendingApi) }
-    single<RecommendationRepository> { RecommendationRepository(get<TrendsRepository>()) }
+    single<RecommendationRepository> { RecommendationRepository(get<AniApiProvider>().homeApi) }
     single<AutoSkipRepository> { AutoSkipRepository(get<AniApiProvider>().episodesApi) }
 
     single<DanmakuRepository> {

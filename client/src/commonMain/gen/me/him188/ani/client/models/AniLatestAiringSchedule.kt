@@ -1,5 +1,4 @@
 // @formatter:off
-// @formatter:off
 /**
  *
  * Please note:
@@ -17,35 +16,27 @@
 
 package me.him188.ani.client.models
 
-import me.him188.ani.client.models.AniDanmakuInfoEntity
+import me.him188.ani.client.models.AniAiringScheduleForDate
 
 import kotlinx.serialization.*
 import kotlinx.serialization.descriptors.*
 import kotlinx.serialization.encoding.*
 
 /**
- * 
  *
- * @param id 
- * @param senderId 
- * @param danmakuInfo 
+ *
+ * @param list
  */
 @Serializable
 
-data class AniDanmakuEntity (
+data class AniLatestAiringSchedule (
 
-    @SerialName(value = "id") @Required val id: kotlin.String,
-
-    @SerialName(value = "senderId") @Required val senderId: kotlin.String,
-
-    @SerialName(value = "danmakuInfo") @Required val danmakuInfo: AniDanmakuInfoEntity
+    @SerialName(value = "list") @Required val list: kotlin.collections.List<AniAiringScheduleForDate>
 
 ) {
 
 
 }
 
-
-// @formatter:on
 
 // @formatter:on
