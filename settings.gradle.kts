@@ -32,6 +32,7 @@ pluginManagement {
 dependencyResolutionManagement {
     @Suppress("UnstableApiUsage")
     repositories {
+        mavenLocal()
         mavenCentral()
     }
     versionCatalogs {
@@ -158,6 +159,7 @@ includeProject(
 
 // ci
 includeProject(":ci-helper", "ci-helper") // 
+includeProject(":tools:datasource-test-mcp", "tools/datasource-test-mcp")
 
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
@@ -186,8 +188,8 @@ findLocalProperty("ani.build.mediamp.path")?.let { mediampPath ->
                 .using(project(":mediamp-exoplayer"))
             substitute(module("org.openani.mediamp:mediamp-vlc"))
                 .using(project(":mediamp-vlc"))
-            /*substitute(module("org.openani.mediamp:mediamp-mpv"))
-                .using(project(":mediamp-mpv"))*/
+            substitute(module("org.openani.mediamp:mediamp-mpv"))
+                .using(project(":mediamp-mpv"))
             /*substitute(module("org.openani.mediamp:mediamp-ffmpeg"))
                 .using(project(":mediamp-ffmpeg"))*/
             substitute(module("org.openani.mediamp:mediamp-test"))

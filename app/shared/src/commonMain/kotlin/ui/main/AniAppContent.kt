@@ -85,6 +85,9 @@ import me.him188.ani.app.ui.onboarding.OnboardingCompleteViewModel
 import me.him188.ani.app.ui.onboarding.OnboardingScreen
 import me.him188.ani.app.ui.onboarding.OnboardingViewModel
 import me.him188.ani.app.ui.onboarding.WelcomeScreen
+import me.him188.ani.app.ui.playback.PlaybackHistoryScreen
+import me.him188.ani.app.ui.playback.PlaybackHistorySyncStatusScreen
+import me.him188.ani.app.ui.playback.PlaybackHistoryViewModel
 import me.him188.ani.app.ui.profile.auth.AniContactList
 import me.him188.ani.app.ui.search.SearchScreen
 import me.him188.ani.app.ui.settings.SettingsScreen
@@ -96,6 +99,10 @@ import me.him188.ani.app.ui.settings.mediasource.selector.EditSelectorMediaSourc
 import me.him188.ani.app.ui.settings.tabs.media.torrent.peer.PeerFilterSettingsScreen
 import me.him188.ani.app.ui.settings.tabs.media.torrent.peer.PeerFilterSettingsViewModel
 import me.him188.ani.app.ui.subject.details.SubjectDetailsScreen
+import me.him188.ani.app.ui.subject.person.CharacterDetailsScreen
+import me.him188.ani.app.ui.subject.person.CharacterDetailsViewModel
+import me.him188.ani.app.ui.subject.person.PersonDetailsScreen
+import me.him188.ani.app.ui.subject.person.PersonDetailsViewModel
 import me.him188.ani.app.ui.subject.details.SubjectDetailsViewModel
 import me.him188.ani.app.ui.subject.episode.EpisodeScreen
 import me.him188.ani.app.ui.subject.episode.EpisodeViewModel
@@ -472,6 +479,57 @@ private fun AniAppContentImpl(
                     },
                 )
             }
+            composable<NavRoutes.PlaybackHistory>(
+                enterTransition = enterTransition,
+                exitTransition = exitTransition,
+                popEnterTransition = popEnterTransition,
+                popExitTransition = popExitTransition,
+            ) { backStackEntry ->
+                val route = backStackEntry.toRoute<NavRoutes.PlaybackHistory>()
+                PlaybackHistoryScreen(
+                    vm = viewModel { PlaybackHistoryViewModel() },
+                    onNavigateBack = { aniNavigator.popBackStack(route, inclusive = true) },
+                    onOpenHistory = { history ->
+                        val subjectId = history.subjectId
+                        if (subjectId != null) {
+                            aniNavigator.navigateEpisodeDetails(subjectId, history.episodeId)
+                        }
+                    },
+                    onOpenSyncStatus = {
+                        aniNavigator.navigatePlaybackHistorySyncStatus()
+                    },
+                    modifier = Modifier.fillMaxSize(),
+                    navigationIcon = {
+                        BackNavigationIconButton(
+                            {
+                                aniNavigator.popBackStack(route, inclusive = true)
+                            },
+                        )
+                    },
+                    windowInsets = windowInsetsWithoutTitleBar,
+                )
+            }
+            composable<NavRoutes.PlaybackHistorySyncStatus>(
+                enterTransition = enterTransition,
+                exitTransition = exitTransition,
+                popEnterTransition = popEnterTransition,
+                popExitTransition = popExitTransition,
+            ) { backStackEntry ->
+                val route = backStackEntry.toRoute<NavRoutes.PlaybackHistorySyncStatus>()
+                PlaybackHistorySyncStatusScreen(
+                    vm = viewModel { PlaybackHistoryViewModel() },
+                    onNavigateBack = { aniNavigator.popBackStack(route, inclusive = true) },
+                    modifier = Modifier.fillMaxSize(),
+                    navigationIcon = {
+                        BackNavigationIconButton(
+                            {
+                                aniNavigator.popBackStack(route, inclusive = true)
+                            },
+                        )
+                    },
+                    windowInsets = windowInsetsWithoutTitleBar,
+                )
+            }
             composable<NavRoutes.Caches>(
                 enterTransition = enterTransition,
                 exitTransition = exitTransition,
@@ -516,6 +574,44 @@ private fun AniAppContentImpl(
                     },
                     Modifier.fillMaxSize(),
                     windowInsets = windowInsets,
+                )
+            }
+            composable<NavRoutes.PersonDetail>(
+                enterTransition = enterTransition,
+                exitTransition = exitTransition,
+                popEnterTransition = popEnterTransition,
+                popExitTransition = popExitTransition,
+            ) { backStackEntry ->
+                val route = backStackEntry.toRoute<NavRoutes.PersonDetail>()
+                val vm = viewModel<PersonDetailsViewModel>(key = "person-${route.personId}") {
+                    PersonDetailsViewModel(route.personId)
+                }
+                PersonDetailsScreen(
+                    vm,
+                    Modifier.fillMaxSize(),
+                    windowInsets = windowInsets,
+                    navigationIcon = {
+                        BackNavigationIconButton({ aniNavigator.popBackStack(route, inclusive = true) })
+                    },
+                )
+            }
+            composable<NavRoutes.CharacterDetail>(
+                enterTransition = enterTransition,
+                exitTransition = exitTransition,
+                popEnterTransition = popEnterTransition,
+                popExitTransition = popExitTransition,
+            ) { backStackEntry ->
+                val route = backStackEntry.toRoute<NavRoutes.CharacterDetail>()
+                val vm = viewModel<CharacterDetailsViewModel>(key = "character-${route.characterId}") {
+                    CharacterDetailsViewModel(route.characterId)
+                }
+                CharacterDetailsScreen(
+                    vm,
+                    Modifier.fillMaxSize(),
+                    windowInsets = windowInsets,
+                    navigationIcon = {
+                        BackNavigationIconButton({ aniNavigator.popBackStack(route, inclusive = true) })
+                    },
                 )
             }
             composable<NavRoutes.SubjectCaches>(

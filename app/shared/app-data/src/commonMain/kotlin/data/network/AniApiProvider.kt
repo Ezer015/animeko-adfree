@@ -12,10 +12,13 @@ package me.him188.ani.app.data.network
 import me.him188.ani.app.domain.foundation.ServerListFeatureConfig
 import me.him188.ani.client.apis.BangumiAniApi
 import me.him188.ani.client.apis.BangumiOAuthAniApi
+import me.him188.ani.client.apis.CharactersAniApi
 import me.him188.ani.client.apis.DanmakuAniApi
 import me.him188.ani.client.apis.EpisodesAniApi
 import me.him188.ani.client.apis.HomeAniApi
 import me.him188.ani.client.apis.PeerFilterRuleAniApi
+import me.him188.ani.client.apis.PersonsAniApi
+import me.him188.ani.client.apis.PlaybackHistoryAniApi
 import me.him188.ani.client.apis.ScheduleAniApi
 import me.him188.ani.client.apis.SubjectRelationsAniApi
 import me.him188.ani.client.apis.SubjectsAniApi
@@ -40,9 +43,12 @@ class AniApiProvider(
     val danmakuApi = ApiInvoker(client) { DanmakuAniApi(baseurl, it) }
     val pfRuleApi = ApiInvoker(client) { PeerFilterRuleAniApi(baseurl, it) }
     val episodesApi = ApiInvoker(client) { EpisodesAniApi(baseurl, it) }
+    val playbackHistoryApi = ApiInvoker(client) { PlaybackHistoryAniApi(baseurl, it) }
 
     val bangumiApi = ApiInvoker(client) { BangumiAniApi(baseurl, it) }
     val subjectApi = ApiInvoker(client) { SubjectsAniApi(baseurl, it) }
+    val personsApi = ApiInvoker(client) { PersonsAniApi(baseurl, it) }
+    val charactersApi = ApiInvoker(client) { CharactersAniApi(baseurl, it) }
     val updateApi = ApiInvoker(client) { UpdatesAniApi(baseurl, it) }
     val userApi = ApiInvoker(client) { UserAniApi(baseurl, it) }
     val userAuthApi = ApiInvoker(client) { UserAuthenticationAniApi(baseurl, it) }

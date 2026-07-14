@@ -62,7 +62,9 @@ import me.him188.ani.app.data.repository.player.DanmakuRegexFilterRepositoryImpl
 import me.him188.ani.app.data.repository.player.EpisodePlayHistoryRepository
 import me.him188.ani.app.data.repository.player.EpisodePlayHistoryRepositoryImpl
 import me.him188.ani.app.data.repository.player.EpisodeScreenshotRepository
+import me.him188.ani.app.data.repository.player.PlaybackHistorySyncer
 import me.him188.ani.app.data.repository.player.WhatslinkEpisodeScreenshotRepository
+import me.him188.ani.app.data.repository.person.PersonDetailsRepository
 import me.him188.ani.app.data.repository.repositoryModules
 import me.him188.ani.app.data.repository.subject.DefaultSubjectRelationsRepository
 import me.him188.ani.app.data.repository.subject.FollowedSubjectsRepository
@@ -283,6 +285,12 @@ private fun KoinApplication.otherModules(getContext: () -> Context, coroutineSco
     single<EpisodeService> { EpisodeServiceImpl(aniApiProvider.subjectApi) }
 
     single<BangumiRelatedPeopleService> { BangumiRelatedPeopleService(get<AniApiProvider>().subjectApi) }
+    single<PersonDetailsRepository> {
+        PersonDetailsRepository(
+            personsApi = aniApiProvider.personsApi,
+            charactersApi = aniApiProvider.charactersApi,
+        )
+    }
     single<AnimeScheduleRepository> { AnimeScheduleRepository(get()) }
     single<BangumiCommentRepository> {
         BangumiCommentRepository(
@@ -323,7 +331,19 @@ private fun KoinApplication.otherModules(getContext: () -> Context, coroutineSco
         MediaSourceSubscriptionRepository(getContext().dataStores.mediaSourceSubscriptionStore)
     }
     single<EpisodePlayHistoryRepository> {
-        EpisodePlayHistoryRepositoryImpl(getContext().dataStores.episodeHistoryStore)
+        EpisodePlayHistoryRepositoryImpl(
+            dataStore = getContext().dataStores.episodeHistoryStore,
+            playbackHistoryDao = database.playbackHistoryDao(),
+            onDirtyChanged = { get<PlaybackHistorySyncer>().requestSync() },
+        )
+    }
+    single(createdAtStart = true) {
+        PlaybackHistorySyncer(
+            repository = get(),
+            api = aniApiProvider.playbackHistoryApi,
+            sessionStateProvider = get(),
+            scope = coroutineScope,
+        ).also { it.start() }
     }
     single<AniSubjectRelationIndexService> {
         val provider = get<AniApiProvider>()
@@ -480,7 +500,7 @@ private fun KoinApplication.otherModules(getContext: () -> Context, coroutineSco
     single<MeteredNetworkDetector> { createMeteredNetworkDetector(getContext()) }
     single<SubjectDetailsStateFactory> { DefaultSubjectDetailsStateFactory() }
 
-    single<TurnstileState> {
+    factory<TurnstileState> {
         CreateTurnstileState(
             buildString {
                 append(get<BangumiClient>().turnstileBaseUrl)
@@ -500,6 +520,7 @@ fun KoinApplication.startCommonKoinModule(
 ): KoinApplication {
     // Start the proxy provider very soon (before initialization of any other components)
     runBlocking {
+        koin.get<SessionManager>().clearSessionIfAccessTokenExpired()
         // We have to block here to read the saved proxy settings
         when (val proxyProvider = koin.get<HttpClientProvider>()) {
             // compile-safe type cast
